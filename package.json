@@ -1,0 +1,18 @@
+{
+  "name": "com.framari.WBAnimation",
+  "version": "1.0.0",
+  "displayName": "WBAnimation",
+  "description": "original animation module",
+  "unity": "2020.3",
+  "unityRelease": "19f1",
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "author": {
+    "name": "framari",
+    "email": "mirochacha_u_u_1106@yahoo.co.jp",
+    "url": "https://framari.org"
+  }
+}
