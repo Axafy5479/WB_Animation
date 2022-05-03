@@ -30,15 +30,13 @@ namespace WB.Animation
 
         protected override void _update(float progressRatio)
         {
-            Vector3 pos = new Vector3(StartX + XChange * progressRatio, Trn.position.y, Trn.position.z);
-
             if (LocalPos)
             {
-                Trn.localPosition = pos;
+                Trn.localPosition = new Vector3(StartX + XChange * progressRatio, Trn.localPosition.y, Trn.localPosition.z);
             }
             else
             {
-                Trn.position = pos;
+                Trn.position = new Vector3(StartX + XChange * progressRatio, Trn.position.y, Trn.position.z);
             }
         }
 

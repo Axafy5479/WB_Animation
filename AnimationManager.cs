@@ -21,9 +21,9 @@ namespace WB.Animation
                     instances = FindObjectsOfType<AnimationManager>();
                     if (instances.Length == 0)
                     {
-                        GameObject go = Instantiate(Resources.Load<GameObject>("WB_Manager"));
+                        GameObject go = new GameObject("WB_AnimationManager");
                         DontDestroyOnLoad(go);
-                        return go.GetComponent<AnimationManager>();
+                        return go.AddComponent<AnimationManager>();
                     }
                     else if (instances.Length > 1)
                     {
