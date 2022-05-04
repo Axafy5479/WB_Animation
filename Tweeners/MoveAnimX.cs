@@ -5,38 +5,35 @@ using UnityEngine;
 
 namespace WB.Animation
 {
-    public class MoveAnimX : Tweener
+    public class MoveAnimX : MonoTweener<Transform>
     {
-        private Transform Trn { get; set; }
         private float XChange { get; set; }
-        private bool LocalPos { get; set; }
+        private bool LocalPos { get; }
         private float StartX { get; set; }
         private float MoveTo { get; }
 
-        public MoveAnimX(Transform trn, float moveTo, float animTime, bool localPos) : base(null, animTime)
+        public MoveAnimX(Transform trn, float moveTo, float animTime, bool localPos) : base(trn,null, animTime)
         {
             MoveTo = moveTo;
             LocalPos = localPos;
-            Trn = trn;
-            OnEnd = () => _update(1);
         }
 
-        public override void Start()
+        protected override void __start(Transform trn)
         {
-            StartX = LocalPos ? Trn.localPosition.x : Trn.position.x;
-            XChange = LocalPos ? MoveTo - Trn.localPosition.x : MoveTo - Trn.position.x;
+            StartX = LocalPos ? trn.localPosition.x : trn.position.x;
+            XChange = LocalPos ? MoveTo - trn.localPosition.x : MoveTo - trn.position.x;
 
         }
 
-        protected override void _update(float progressRatio)
+        protected override void __update(Transform trn,float progressRatio)
         {
             if (LocalPos)
             {
-                Trn.localPosition = new Vector3(StartX + XChange * progressRatio, Trn.localPosition.y, Trn.localPosition.z);
+                trn.localPosition = new Vector3(StartX + XChange * progressRatio, trn.localPosition.y, trn.localPosition.z);
             }
             else
             {
-                Trn.position = new Vector3(StartX + XChange * progressRatio, Trn.position.y, Trn.position.z);
+                trn.position = new Vector3(StartX + XChange * progressRatio, trn.position.y, trn.position.z);
             }
         }
 

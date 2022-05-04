@@ -5,38 +5,35 @@ using UnityEngine;
 
 namespace WB.Animation
 {
-    public class MoveAnim : Tweener
+    public class MoveAnim :  MonoTweener<Transform>
     {
-        protected Transform Trn { get; set; }
-        protected Vector3 PosChange { get; set; }
-        protected bool LocalPos { get; set; }
-        protected Vector3 StartPos { get; set; }
+        private Vector3 PosChange { get; set; }
+        private bool LocalPos { get; set; }
+        private Vector3 StartPos { get; set; }
         private Vector3 MoveTo { get; }
 
-        public MoveAnim(Transform trn, Vector3 moveTo, float animTime, bool localPos) : base(null, animTime)
+        public MoveAnim(Transform trn, Vector3 moveTo, float animTime, bool localPos) : base(trn,null, animTime)
         {
             MoveTo = moveTo;
             LocalPos = localPos;
-            Trn = trn;
-            OnEnd = () => _update(1);
         }
 
-        public override void Start()
+        protected override void __start(Transform trn)
         {
-            StartPos = LocalPos ? Trn.localPosition : Trn.position;
-            PosChange = LocalPos ? MoveTo - Trn.localPosition : MoveTo - Trn.position;
+            StartPos = LocalPos ? trn.localPosition : trn.position;
+            PosChange = LocalPos ? MoveTo - trn.localPosition : MoveTo - trn.position;
 
         }
 
-        protected override void _update(float progressRatio)
+        protected override void __update(Transform trn,float progressRatio)
         {
             if (LocalPos)
             {
-                Trn.localPosition = StartPos + PosChange * progressRatio;
+                trn.localPosition = StartPos + PosChange * progressRatio;
             }
             else
             {
-                Trn.position = StartPos + PosChange * progressRatio;
+                trn.position = StartPos + PosChange * progressRatio;
             }
         }
 

@@ -10,7 +10,6 @@ namespace WB.Animation
         #region Singleton
 
         private static AnimationManager instance;
-
         public static AnimationManager I
         {
             get
@@ -23,6 +22,7 @@ namespace WB.Animation
                     {
                         GameObject go = new GameObject("WB_AnimationManager");
                         DontDestroyOnLoad(go);
+                        Debug.Log("生成!");
                         return go.AddComponent<AnimationManager>();
                     }
                     else if (instances.Length > 1)
@@ -109,7 +109,13 @@ namespace WB.Animation
                 }
             }
         }
+        
+        private void OnDestroy()
+        {
+            new List<Tweener>(Tweeners).ForEach(t=>t.Kill());
+        }
 
         #endregion
+
     }
 }

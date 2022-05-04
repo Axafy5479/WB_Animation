@@ -14,7 +14,6 @@ namespace WB.Animation
         public GeneralAnim(float startVal, float endVal, Action<float> updateMethod, float animTime) : base(null,
             animTime)
         {
-            OnEnd = () => _update(1);
             StartVal = startVal;
             EndVal = endVal;
             UpdateMethod = updateMethod;

@@ -8,13 +8,16 @@ namespace WB.Animation
     public abstract class Tweener
     {
         public Ease Ease { get; private set; } = Ease.Liner;
-
+        private AnimationManager manager;
+        
         public Tweener(Action onEnd, float animTime)
         {
+            manager = AnimationManager.I;
             AnimTime = animTime;
             //UpdateMethod = updateMethod;
             JoinedTweeners = new List<Tweener>();
-            OnEnd = onEnd;
+            OnEnd = () => _update(1);
+            if(onEnd!=null)OnEnd += onEnd;
         }
 
         public void TimeInitialization(float currentTime)
@@ -42,7 +45,7 @@ namespace WB.Animation
         public float AnimTime { get; private set; }
 
         //public Action<float> UpdateMethod { get; }
-        public Action OnEnd { get; protected set; }
+        public Action OnEnd { get; }
         internal Tweener NextTween { get; set; }
         public List<Tweener> JoinedTweeners { get; }
 
@@ -55,7 +58,7 @@ namespace WB.Animation
         public void Kill()
         {
             NextTween = null;
-            AnimationManager.I.RemoveTweener(this);
+            if(manager!=null)manager.RemoveTweener(this);
         }
     }
 }

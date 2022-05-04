@@ -5,38 +5,38 @@ using UnityEngine;
 
 namespace WB.Animation
 {
-    public class MoveAnimY : Tweener
+    public class MoveAnimY : MonoTweener<Transform>
     {
-        private Transform Trn { get; set; }
         private float YChange { get; set; }
         private bool LocalPos { get; set; }
         private float StartY { get; set; }
         private float MoveTo { get; }
 
-        public MoveAnimY(Transform trn, float moveTo, float animTime, bool localPos) : base(null, animTime)
+        public MoveAnimY(Transform trn, float moveTo, float animTime, bool localPos)  : base(trn,null, animTime)
         {
             MoveTo = moveTo;
             LocalPos = localPos;
-            Trn = trn;
-            OnEnd = () => _update(1);
         }
 
-        public override void Start()
+        protected override void __start(Transform trn)
         {
-            StartY = LocalPos ? Trn.localPosition.y : Trn.position.y;
-            YChange = LocalPos ? MoveTo - Trn.localPosition.y : MoveTo - Trn.position.y;
+            if (trn == null) return;
+            StartY = LocalPos ? trn.localPosition.y : trn.position.y;
+            YChange = LocalPos ? MoveTo - trn.localPosition.y : MoveTo - trn.position.y;
 
         }
 
-        protected override void _update(float progressRatio)
+        protected override void __update(Transform trn,float progressRatio)
         {
+            if (trn == null) return;
+            
             if (LocalPos)
             {
-                Trn.localPosition = new Vector3(Trn.localPosition.x, StartY + YChange * progressRatio, Trn.localPosition.z);
+                trn.localPosition = new Vector3(trn.localPosition.x, StartY + YChange * progressRatio, trn.localPosition.z);
             }
             else
             {
-                Trn.position = new Vector3(Trn.position.x, StartY + YChange * progressRatio, Trn.position.z);
+                trn.position = new Vector3(trn.position.x, StartY + YChange * progressRatio, trn.position.z);
             }
         }
 
