@@ -1,64 +1,165 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using WB.Pool;
 
-namespace WB.Animation
+namespace WB.Tweener
 {
-    public abstract class Tweener
+    public class Tweener<T> : ITweenerUpdater, ITweenerForSequence, IPoolObject
     {
-        public Ease Ease { get; private set; } = Ease.Liner;
-        private AnimationManager manager;
+        public Tweener()
+        {
+            joinedTweeners = new List<ITweener>();
+        }
+        private int ID;
+        private Action ReturnTweenerMethod { get; set; }
+
+        public void SetReturnMethod(Action returnMethod) => ReturnTweenerMethod = returnMethod;
         
-        public Tweener(Action onEnd, float animTime)
+        
+        private Action onCompleted;
+        
+        
+        
+        
+        
+
+        private Func<T> ValueGetter { get; set; }
+        private Action<T> ValueSetter { get; set; }
+        private T EndValue { get; set; }
+        private float Duration { get; set; }
+        private float CurrentTime { get; set; }
+        private Ease Ease { get; set; }
+        private T StartValue { get; set; }
+        private T ChangeValue { get; set; }
+        private Func<bool> CheckTargetExist { get; set; }
+
+        public void SetId(int id)
         {
-            manager = AnimationManager.I;
-            AnimTime = animTime;
-            //UpdateMethod = updateMethod;
-            JoinedTweeners = new List<Tweener>();
-            OnEnd = () => _update(1);
-            if(onEnd!=null)OnEnd += onEnd;
+            ID = id;
         }
 
-        public void TimeInitialization(float currentTime)
+        public void Initialize()
         {
-            StartTime = currentTime;
-            AnimTime += currentTime;
+            ValueGetter = null;
+            ValueSetter = null;
+            EndValue = default;
+            Duration = 0;
+            CurrentTime = 0;
+
+            IsRunning = false;
+            Ease = Ease.Liner;
+            StartValue = default;
+            ChangeValue = default;
+            CheckTargetExist = null;
+            onCompleted = null;
+            nextTweener = null;
+            joinedTweeners.Clear();
         }
 
-        public virtual void Start()
+
+
+        public void AddOnCompleted(Action method)
         {
+            if (onCompleted == null)
+                onCompleted = method;
+            else
+                onCompleted += method;
         }
 
-        public void Update(float currentTime)
+        public bool IsRunning { get; private set; }
+
+
+        public void Play()
         {
-            CurrentTime = currentTime;
-            float progressRatio = (currentTime - StartTime) / (AnimTime - StartTime);
-            _update(EasingFunctions.EaseFuncMap[Ease](progressRatio));
+            if (CheckTargetExist())
+            {
+                IsRunning = true;
+                CurrentTime = 0;
+                StartValue = ValueGetter();
+                ChangeValue = ABSTweenPluginUtility.I.Resolve<T>().EvaluateChangeValue(StartValue, EndValue);
+                TweenerManager.I.AddTweener(this);
+            }
+            else
+            {
+                Kill();
+            }
+
+            joinedTweeners.ForEach(t => t.Play());
         }
 
-        protected abstract void _update(float progressRatio);
+        public void Sleep()
+        {
+            IsRunning = false;
+        }
 
-        public float CurrentTime { get; private set; }
-        public float StartTime { get; private set; }
-
-        public float AnimTime { get; private set; }
-
-        //public Action<float> UpdateMethod { get; }
-        public Action OnEnd { get; }
-        internal Tweener NextTween { get; set; }
-        public List<Tweener> JoinedTweeners { get; }
-
-        public Tweener SetEase(Ease ease)
+        public ITweener SetEase(Ease ease)
         {
             Ease = ease;
             return this;
         }
 
+        public virtual void Update(float deltaTime)
+        {
+            if (CheckTargetExist())
+            {
+                CurrentTime += deltaTime;
+                var progressRatio = CurrentTime / Duration;
+                if (progressRatio < 1)
+                {
+                    ABSTweenPluginUtility.I.Resolve<T>()
+                        .EvaluateAndApply(ValueSetter, StartValue, ChangeValue, progressRatio, Ease);
+                }
+                else
+                {
+                    ABSTweenPluginUtility.I.Resolve<T>()
+                        .EvaluateAndApply(ValueSetter, StartValue, ChangeValue, 1, Ease);
+                    OnCompleted();
+                }
+            }
+            else
+            {
+                Kill();
+            }
+        }
+
+        internal void SetParams(Func<bool> checkTargetExist, Func<T> valueGetter, Action<T> valueSetter, T endValue,
+            float duration)
+        {
+            ValueGetter = valueGetter;
+            ValueSetter = valueSetter;
+            EndValue = endValue;
+            Duration = duration;
+            CheckTargetExist = checkTargetExist;
+        }
+
+        private void OnCompleted()
+        {
+            onCompleted?.Invoke();
+            nextTweener?.Play();
+            Kill();
+        }
+
         public void Kill()
         {
-            NextTween = null;
-            if(manager!=null)manager.RemoveTweener(this);
+            TweenerManager.I.CompletedTweeners.Enqueue(this);
+            ReturnTweenerMethod();
         }
+
+        #region For Sequence
+
+        internal ITweener nextTweener;
+        internal readonly List<ITweener> joinedTweeners;
+
+        public void SetNextNode(ITweener node)
+        {
+            nextTweener = node;
+        }
+
+        public void AddJoinNode(ITweener node)
+        {
+            joinedTweeners.Add(node);
+        }
+
+        #endregion
     }
 }

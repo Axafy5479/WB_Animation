@@ -4,7 +4,9 @@
   "displayName": "WBAnimation",
   "description": "original animation module",
   "unity": "2020.3",
-  "dependencies": {},
+  "dependencies": {
+    "com.framari.wbpool": "1.0.0"
+  },
   "license": "MIT",
   "author": {
     "name": "framari",

@@ -1,0 +1,21 @@
+@startuml Tweenの生成
+
+    actor user <<MonoBehaviour>>
+    participant AnimTarget <<MonoBehaviour>>
+    participant Tweener
+    participant TweenManager
+    participant TimeManager <<MonoBehaviour>>
+
+    user->AnimTarget : getter,setterの取得
+    user -> Tweener : new(getter setter)
+    Tweener->TweenManager : Tweenの登録
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    AnimTarget<-Tweener : Animation
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    AnimTarget<-Tweener : Animation
+
+
+
+@enduml

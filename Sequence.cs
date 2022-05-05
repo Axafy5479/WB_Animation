@@ -1,64 +1,113 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-namespace WB.Animation
+namespace WB.Tweener
 {
     public class Sequence
     {
-        public List<(Tweener tweener, bool isAppended)> Methods { get; }
-            = new List<(Tweener tweener, bool isAppended)>();
+        private ITweenerForSequence startNode, lastAppend, lastNode;
 
+        public float CurrentTime { get; set; }
+        public bool IsRunning { get; set; }
 
-        public Sequence Append(Tweener tweener)
+        private Sequence SetFirstTweener(ITweenerForSequence tweener)
         {
-            if (Methods.Count > 0)
-            {
-                Methods[Methods.Count - 1].tweener.NextTween = tweener;
-            }
-
-            Methods.Add((tweener, true));
+            var tweenerForSeq = tweener;
+            startNode = tweenerForSeq;
+            lastNode = tweenerForSeq;
+            lastAppend = tweenerForSeq;
             return this;
         }
 
-        public Sequence Join(Tweener tweener)
+        public Sequence Append(ITweener tweener)
         {
-            Tweener lastAppended = null;
+            var tweenerForSeq = (ITweenerForSequence) tweener;
 
-            for (int i = Methods.Count - 1; i >= 0; i--)
-            {
-                if (Methods[i].isAppended)
-                {
-                    lastAppended = Methods[i].tweener;
-                    break;
-                }
-            }
+            if (startNode == null) return SetFirstTweener(tweenerForSeq);
 
-            if (lastAppended != null)
-            {
-                lastAppended.JoinedTweeners.Add(tweener);
-                Methods.Add((tweener, false));
-            }
-            else
-            {
-                Append(tweener);
-            }
+            lastNode.SetNextNode(tweenerForSeq);
+            lastNode = tweenerForSeq;
+            lastAppend = tweenerForSeq;
+            return this;
+        }
 
+        public Sequence Join(ITweener tweener)
+        {
+            var tweenerForSeq = (ITweenerForSequence) tweener;
+
+            if (startNode == null) return SetFirstTweener(tweenerForSeq);
+
+            lastNode = tweenerForSeq;
+            lastAppend.AddJoinNode(tweenerForSeq);
+            return this;
+        }
+
+        public Sequence Delay(float time)
+        {
+            Append(WBTween.Delay(time));
             return this;
         }
 
         public void Play()
         {
-            AnimationManager.I.AddSequence(this);
+            IsRunning = true;
+            startNode.Play();
         }
 
-        public void Kill()
+
+        public Sequence AppendCallback(Action method)
         {
-            foreach (var tweener in Methods)
-            {
-                tweener.tweener.Kill();
-            }
+            lastNode.AddOnCompleted(method);
+            return this;
         }
+
+        // private class Node
+        // {
+        //     public Node nextTweener;
+        //     public List<Node> joinedTweeners;
+        //
+        //     public ITweenerUpdater Tweener { get; }
+        //     public Node(ITweenerUpdater tweener)
+        //     {
+        //         Tweener = tweener;
+        //         joinedTweeners = new List<Node>();
+        //     }
+        //
+        //     public virtual void Play()
+        //     {
+        //         joinedTweeners.ForEach(t=>t.Play());
+        //         Tweener.AddOnCompleted(OnEnd);
+        //         Tweener.Play();
+        //     }
+        //
+        //     public void OnEnd()
+        //     {
+        //         nextTweener?.Play();
+        //     }
+        //
+        //     public void SetNextNode(Node node)
+        //     {
+        //         nextTweener=node;
+        //     }
+        //
+        //     public void AddJoinNode(Node node)
+        //     {
+        //         joinedTweeners.Add(node);
+        //     }
+        //     
+        // }
+        //
+        // private class StartNode : Node
+        // {
+        //     public StartNode() : base(null)
+        //     {
+        //     }
+        //
+        //     public override void Play()
+        //     {
+        //         OnEnd();
+        //     }
+        // }
+        //
+        //
     }
 }

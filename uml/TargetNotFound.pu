@@ -1,0 +1,19 @@
+@startuml Tweenの停止
+
+    actor user <<MonoBehaviour>>
+    participant AnimTarget <<MonoBehaviour>>
+    participant Tweener
+    participant TweenManager
+    participant TimeManager <<MonoBehaviour>>
+
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    AnimTarget x<-Tweener : TargetNotFound
+    Tweener -> TweenManager : Remove(this)
+
+
+
+ 
+
+
+@enduml

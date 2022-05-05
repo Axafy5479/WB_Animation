@@ -1,0 +1,22 @@
+@startuml Tweenの停止
+
+    actor user <<MonoBehaviour>>
+    participant AnimTarget <<MonoBehaviour>>
+    participant Tweener
+    participant TweenManager
+    participant TimeManager <<MonoBehaviour>>
+
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    AnimTarget<-Tweener : Animation
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    AnimTarget<-Tweener : Animation
+
+    user->Tweener:ストップフラグを立てる
+    TweenManager<-TimeManager : 時間の更新
+    Tweener<-TweenManager : Update()
+    hnote over Tweener : なにもしない
+
+
+@enduml
