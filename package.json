@@ -5,7 +5,7 @@
   "description": "original animation module",
   "unity": "2020.3",
   "dependencies": {
-    "com.framari.wbpool": "1.0.0"
+    "com.framari.wbpool": "https://github.com/FraMari495/WB_ObjectPool.git"
   },
   "license": "MIT",
   "author": {
